@@ -10,3 +10,4 @@ data/processed/
 .idea/
 .env.*
 !.env.example
+*.iml
