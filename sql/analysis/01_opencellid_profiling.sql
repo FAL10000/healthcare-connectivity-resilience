@@ -188,3 +188,58 @@ SELECT
     SUM(CASE WHEN updated = created THEN 0 ELSE 1 END) AS diff_date
 FROM opencellid_raw
 WHERE radio = 'UMTS' AND DATE_TRUNC('month', TO_TIMESTAMP(updated)) = DATE '2026-05-01';
+
+
+-- 15. Duplicate Cell Identifier Check
+-- Identify records sharing the same MCC, network, area, cell ID, and radio technology.
+-- Count occurrences of each identifier combination.
+-- Flag potential duplicate records for further data quality investigation.
+
+SELECT
+    mcc,
+    net,
+    area,
+    cell,
+    radio,
+    COUNT(*) AS record_count
+FROM opencellid_raw
+GROUP BY mcc, net, area, cell, radio
+HAVING record_count > 1;
+
+
+-- 16. Cell Observation Sample Count Summary
+-- Examine the distribution count of samples across cell records.
+-- Calculate the minimum, maximum, and average number of samples.
+-- Identify single-sample records which may have limited observational support.
+
+SELECT
+    COUNT(*) AS total_records,
+    MIN(samples) AS min_samples,
+    MAX(samples) AS max_samples,
+    AVG(samples) AS avg_samples,
+    SUM(CASE WHEN samples = 1 THEN 1 ELSE 0 END) AS single_samples
+FROM opencellid_raw;
+
+-- 17. Cell Observation Sample Count Distribution
+-- Examine the frequency distribution of sample counts across cell records.
+-- Count how many records are associated with each distinct sample count.
+-- Identify concentrations of low-sample records and unusually high observation counts.
+
+SELECT
+    samples,
+    COUNT(*) record_count
+FROM opencellid_raw
+GROUP BY samples
+ORDER BY samples;
+
+
+-- 18. Cell Range Distribution Summary
+-- Examine the distribution of estimated cell ranges across records.
+-- Calculate the minimum, maximum, average, and median range values.
+-- Identify potential outliers and assess variability in estimated cell coverage.
+SELECT
+    MIN(range) AS min_range,
+    MAX(range) AS max_range,
+    AVG(range) AS avg_range,
+    MEDIAN(range) AS median_range
+FROM opencellid_raw;
